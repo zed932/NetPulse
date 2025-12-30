@@ -7,9 +7,13 @@
 
 import Foundation
 
-enum UserStatus: Codable {
-    case online
-    case offline
-    case working
-    case studying
+enum UserStatus: String, Codable {
+    case online = "Онлайн"
+    case offline = "Оффлайн"
+    case working = "Работает"
+    case studying = "Учится"
+    
+    var description: String {
+        return self.rawValue
+    }
 }

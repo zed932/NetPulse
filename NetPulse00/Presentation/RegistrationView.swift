@@ -8,24 +8,24 @@
 import SwiftUI
 
 struct RegistrationView: View {
-    
-    @State private var newUserName: String = ""
-    @State private var newUserEmail: String = ""
-    @State private var showingError = false
+    @State private var name = ""
+    @State private var email = ""
+    @State private var isRegistering = false
+    @State private var showError = false
     @State private var errorMessage = ""
     
     @EnvironmentObject var userManager: UserManager
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Регистрация")
+            Text("NetPulse")
                 .font(.largeTitle)
                 .padding(.top, 40)
             
             VStack(alignment: .leading, spacing: 8) {
                 Text("Имя:")
                     .font(.headline)
-                TextField("Введите ваше имя", text: $newUserName)
+                TextField("Введите ваше имя", text: $name)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.words)
             }
@@ -34,7 +34,7 @@ struct RegistrationView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Email:")
                     .font(.headline)
-                TextField("Введите вашу почту", text: $newUserEmail)
+                TextField("Введите email", text: $email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
@@ -43,23 +43,34 @@ struct RegistrationView: View {
             
             Spacer()
             
-            Button(action: {
-                registerUser()
-            }) {
-                Text("Зарегистрироваться")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isFormValid ? Color.blue : Color.gray)
-                    .cornerRadius(10)
+            VStack(spacing: 15) {
+                // Кнопка регистрации
+                Button(action: {
+                    registerUser()
+                }) {
+                    Text("Зарегистрироваться")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isFormValid ? Color.blue : Color.gray)
+                        .cornerRadius(10)
+                }
+                .disabled(!isFormValid)
+                
+                // Или войти как тестовый пользователь
+                Button("Войти как тестовый пользователь") {
+                    if userManager.login(email: "anna@test.com") {
+                        // Успешный вход
+                    }
+                }
+                .foregroundColor(.gray)
             }
-            .disabled(!isFormValid)
             .padding(.horizontal)
             .padding(.bottom, 30)
         }
         .padding()
-        .alert("Ошибка", isPresented: $showingError) {
+        .alert("Ошибка", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)
@@ -67,42 +78,29 @@ struct RegistrationView: View {
     }
     
     private var isFormValid: Bool {
-        return !newUserName.trimmingCharacters(in: .whitespaces).isEmpty &&
-               !newUserEmail.trimmingCharacters(in: .whitespaces).isEmpty &&
-               newUserEmail.contains("@")
+        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !email.trimmingCharacters(in: .whitespaces).isEmpty &&
+        email.contains("@")
     }
     
     private func registerUser() {
-        // Валидация email
-        guard isValidEmail(newUserEmail) else {
-            errorMessage = "Введите корректный email адрес"
-            showingError = true
+        // Простая валидация email
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        
+        guard emailPredicate.evaluate(with: email) else {
+            errorMessage = "Введите корректный email"
+            showError = true
             return
         }
         
-        // Создаем нового пользователя
-        let newUser = User(
-            name: newUserName.trimmingCharacters(in: .whitespaces),
-            email: newUserEmail.trimmingCharacters(in: .whitespaces)
-        )
-        
-        // Добавляем через UserManager
-        if userManager.addUser(newUser) {
-            // Успешная регистрация - переход произойдет автоматически
+        // Регистрируем пользователя
+        if userManager.registerNewUser(name: name.trimmingCharacters(in: .whitespaces),
+                                      email: email.trimmingCharacters(in: .whitespaces)) {
+            // Успешная регистрация и вход
         } else {
             errorMessage = "Пользователь с таким email уже существует"
-            showingError = true
+            showError = true
         }
     }
-    
-    private func isValidEmail(_ email: String) -> Bool {
-        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
-        return emailPred.evaluate(with: email)
-    }
-}
-
-#Preview {
-    RegistrationView()
-        .environmentObject(UserManager())
 }

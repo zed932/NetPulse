@@ -1,96 +1,74 @@
-//
-//  UserManager.swift
-//  NetPulse00
-//
-//  Created by Сергей Мещеряков on 29.12.2025.
-//
-
 import Foundation
+import SwiftUI
 import Combine
+
+
+// Все через текущего пользователя
 
 class UserManager: ObservableObject {
     @Published var currentUser: User?
+    @Published var allUsers: [User] = [] // Изначально нет юзеров
+
     
-    private let currentUserKey = "currentUser"
-    private let usersKey = "users"
-    
-    init() {
-        loadCurrentUser()
-    }
-    
-    // MARK: - Current User Management
-    
-    func loadCurrentUser() {
-        if let data = UserDefaults.standard.data(forKey: currentUserKey) {
-            if let user = try? JSONDecoder().decode(User.self, from: data) {
-                currentUser = user
-            }
-        }
-    }
-    
-    func saveCurrentUser(_ user: User) {
-        if let encoded = try? JSONEncoder().encode(user) {
-            UserDefaults.standard.set(encoded, forKey: currentUserKey)
+    func login(email: String) -> Bool {
+        if let user = allUsers.first(where: { $0.email == email }) {
             currentUser = user
+            return true
         }
+        return false
     }
     
     func logout() {
-        UserDefaults.standard.removeObject(forKey: currentUserKey)
         currentUser = nil
     }
     
-    // MARK: - All Users Management
+    func updateCurrentUserStatus(_ newStatus: UserStatus) {
+        guard let index = allUsers.firstIndex(where: { $0.id == currentUser?.id }) else { return }
+        allUsers[index].status = newStatus
+        currentUser?.status = newStatus
+    }
     
-    func addUser(_ user: User) -> Bool {
-        // Проверяем уникальность email
-        if userWithEmailExist(email: user.email) {
+    func registerNewUser(name: String, email: String) -> Bool {
+        guard !allUsers.contains(where: { $0.email == email}) else {
             return false
         }
+        let newUser = User(name: name, email: email)
+        allUsers.append(newUser)
         
-        // Сохраняем пользователя в список всех пользователей
-        var allUsers = getAllUsers()
-        allUsers.append(user)
-        saveAllUsers(allUsers)
+        saveUsers()
         
-        // Делаем его текущим
-        saveCurrentUser(user)
-        
+        currentUser = newUser
         return true
     }
     
-    func getAllUsers() -> [User] {
-        if let data = UserDefaults.standard.data(forKey: usersKey) {
-            if let users = try? JSONDecoder().decode([User].self, from: data) {
-                return users
-            }
-        }
-        return []
-    }
-    
-    private func saveAllUsers(_ users: [User]) {
-        if let encoded = try? JSONEncoder().encode(users) {
-            UserDefaults.standard.set(encoded, forKey: usersKey)
+    private func saveUsers() {
+        if let encoded = try? JSONEncoder().encode(allUsers) {
+            UserDefaults.standard.set(encoded, forKey: "savedUsers")
         }
     }
     
-    func userWithEmailExist(email: String) -> Bool {
-        let allUsers = getAllUsers()
-        return allUsers.contains { $0.email == email }
+    // Загрузка из UserDefaults
+    private func loadUsers() {
+        if let savedUsers = UserDefaults.standard.data(forKey: "savedUsers"),
+           let decoded = try? JSONDecoder().decode([User].self, from: savedUsers) {
+            allUsers = decoded
+        }
     }
     
-    // MARK: - Update User
-    
-    func updateUserStatus(_ status: UserStatus) {
-        guard var user = currentUser else { return }
-        user.updateStatus(status)
-        saveCurrentUser(user)
+    // Инициализатор
+    init() {
         
-        // Также обновляем в общем списке
-        var allUsers = getAllUsers()
-        if let index = allUsers.firstIndex(where: { $0.id == user.id }) {
-            allUsers[index].updateStatus(status)
-            saveAllUsers(allUsers)
-        }
+        loadUsers() // Загружаем пользователей
+        
+        
+        let testUsers = [ // Добавляем тестовых мок-юзеров
+            User(name: "Анна", email: "anna@test.com"),
+            User(name: "Иван", email: "ivan@test.com", status: .offline),
+            User(name: "Мария", email: "maria@test.com", status: .studying),
+            User(name: "Алексей", email: "alex@test.com", status: .working)
+        ]
+        
+        allUsers = testUsers // В массив всех юзеров
+        saveUsers()
     }
 }

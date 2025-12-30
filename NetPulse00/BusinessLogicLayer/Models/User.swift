@@ -7,18 +7,20 @@
 
 import Foundation
 
-struct User: Codable {
+struct User: Codable, Identifiable {
     var status: UserStatus
     let id: UUID
     let name: String
     let email: String
+    var friendsList: [UUID]
     
     // Параметры по умолчанию должны идти ПОСЛЕ обязательных параметров
-    init(id: UUID = UUID(), name: String, email: String, status: UserStatus = .online) {
+    init(id: UUID = UUID(), name: String, email: String, status: UserStatus = .online, friendsList: [UUID] = []) {
         self.id = id
         self.name = name
         self.email = email
         self.status = status
+        self.friendsList = friendsList
     }
     
     mutating func updateStatus(_ newStatus: UserStatus) {
@@ -36,6 +38,11 @@ struct User: Codable {
         case .studying:
             status = .online
         }
+    }
+    
+    mutating func addFriend(_ friendId: UUID) {
+        guard !friendsList.contains(friendId) else { return }
+        friendsList.append(friendId)
     }
 }
 
