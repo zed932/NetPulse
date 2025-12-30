@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum UserStatus: Codable {
-    case online
-    case offline
-    case working
-    case studying
-}
-
 struct User: Codable {
     var status: UserStatus
     let id: UUID
