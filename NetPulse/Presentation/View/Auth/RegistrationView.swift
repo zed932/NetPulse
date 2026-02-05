@@ -1,8 +1,6 @@
 //
 //  RegistrationView.swift
-//  NetPulse00
-//
-//  Created by Сергей Мещеряков on 29.12.2025.
+//  NetPulse
 //
 
 import SwiftUI
@@ -13,15 +11,15 @@ struct RegistrationView: View {
     @State private var isRegistering = false
     @State private var showError = false
     @State private var errorMessage = ""
-    
+
     @EnvironmentObject var userManager: UserManager
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Text("NetPulse")
                 .font(.largeTitle)
                 .padding(.top, 40)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Имя:")
                     .font(.headline)
@@ -30,7 +28,7 @@ struct RegistrationView: View {
                     .autocapitalization(.words)
             }
             .padding(.horizontal)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Email:")
                     .font(.headline)
@@ -40,11 +38,10 @@ struct RegistrationView: View {
                     .autocapitalization(.none)
             }
             .padding(.horizontal)
-            
+
             Spacer()
-            
+
             VStack(spacing: 15) {
-                // Кнопка регистрации
                 Button(action: {
                     registerUser()
                 }) {
@@ -57,8 +54,7 @@ struct RegistrationView: View {
                         .cornerRadius(10)
                 }
                 .disabled(!isFormValid)
-                
-                // Или войти как тестовый пользователь
+
                 Button("Войти как тестовый пользователь") {
                     if userManager.login(email: "anna@test.com") {
                         // Успешный вход
@@ -76,25 +72,23 @@ struct RegistrationView: View {
             Text(errorMessage)
         }
     }
-    
+
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !email.trimmingCharacters(in: .whitespaces).isEmpty &&
         email.contains("@")
     }
-    
+
     private func registerUser() {
-        // Простая валидация email
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
-        
+
         guard emailPredicate.evaluate(with: email) else {
             errorMessage = "Введите корректный email"
             showError = true
             return
         }
-        
-        // Регистрируем пользователя
+
         if userManager.registerNewUser(name: name.trimmingCharacters(in: .whitespaces),
                                       email: email.trimmingCharacters(in: .whitespaces)) {
             // Успешная регистрация и вход

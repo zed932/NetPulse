@@ -1,8 +1,6 @@
 //
 //  User.swift
-//  NetPulse00
-//
-//  Created by Сергей Мещеряков on 29.12.2025.
+//  NetPulse
 //
 
 import Foundation
@@ -14,7 +12,6 @@ struct User: Codable, Identifiable {
     let email: String
     var friendsList: [UUID]
     
-    // Параметры по умолчанию должны идти ПОСЛЕ обязательных параметров
     init(id: UUID = UUID(), name: String, email: String, status: UserStatus = .online, friendsList: [UUID] = []) {
         self.id = id
         self.name = name
@@ -45,4 +42,3 @@ struct User: Codable, Identifiable {
         friendsList.append(friendId)
     }
 }
-

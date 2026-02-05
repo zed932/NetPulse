@@ -1,8 +1,6 @@
 //
 //  ProfileView.swift
-//  NetPulse00
-//
-//  Created by Сергей Мещеряков on 30.12.2025.
+//  NetPulse
 //
 
 import SwiftUI
@@ -10,7 +8,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var userManager: UserManager
     @State private var selectedStatus: UserStatus = .online
-    
+
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -18,9 +16,8 @@ struct ProfileView: View {
                     Text("Привет, \(user.name)!")
                         .font(.title)
                         .padding(.top)
-                    
+
                     VStack(spacing: 15) {
-                        // Текущий статус
                         VStack {
                             Text("Текущий статус:")
                                 .font(.headline)
@@ -32,13 +29,12 @@ struct ProfileView: View {
                         .padding()
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(10)
-                        
-                        // Picker для выбора статуса
+
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Изменить статус:")
                                 .font(.headline)
                                 .foregroundColor(.gray)
-                            
+
                             Picker("Статус", selection: $selectedStatus) {
                                 ForEach(UserStatus.allCases, id: \.self) { status in
                                     Text(status.description)
@@ -47,12 +43,10 @@ struct ProfileView: View {
                             }
                             .pickerStyle(.segmented)
                             .onAppear {
-                                // Устанавливаем текущий статус при загрузке
                                 selectedStatus = user.status
                             }
                         }
-                        
-                        // Кнопка сохранения
+
                         Button(action: {
                             userManager.updateCurrentUserStatus(selectedStatus)
                         }) {
@@ -67,9 +61,9 @@ struct ProfileView: View {
                         .padding(.top)
                     }
                     .padding(.horizontal)
-                    
+
                     Spacer()
-                    
+
                     Button("Выйти") {
                         userManager.logout()
                     }
@@ -81,8 +75,7 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
-    // Цвет статуса
+
     private func statusColor(for status: UserStatus) -> Color {
         switch status {
         case .online: return .green

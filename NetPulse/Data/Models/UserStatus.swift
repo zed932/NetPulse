@@ -1,8 +1,6 @@
 //
 //  UserStatus.swift
-//  NetPulse00
-//
-//  Created by Сергей Мещеряков on 30.12.2025.
+//  NetPulse
 //
 
 import Foundation
