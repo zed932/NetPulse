@@ -8,6 +8,7 @@ import SwiftUI
 struct IncomingInvitationsView: View {
     @EnvironmentObject var userManager: UserManager
     @EnvironmentObject var sessionManager: SessionManager
+    @State private var invitationToStart: Invitation?
 
     private var incoming: [Invitation] {
         guard let user = userManager.currentUser else { return [] }
@@ -34,7 +35,7 @@ struct IncomingInvitationsView: View {
                             }
                             Spacer()
                             Button("Принять") {
-                                sessionManager.accept(inv)
+                                invitationToStart = inv
                             }
                             .buttonStyle(.borderedProminent)
                             Button("Отклонить") {
@@ -46,6 +47,9 @@ struct IncomingInvitationsView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $invitationToStart) { inv in
+            AcceptAndStartSessionSheet(invitation: inv)
         }
     }
 }

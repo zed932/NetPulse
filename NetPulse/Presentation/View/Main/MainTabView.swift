@@ -7,6 +7,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var userManager: UserManager
+    @EnvironmentObject var sessionManager: SessionManager
 
     var body: some View {
         TabView {
@@ -21,6 +22,14 @@ struct MainTabView: View {
                     Image(systemName: "person.2.fill")
                     Text("Друзья")
                 }
+
+            NavigationView {
+                ActiveSessionView()
+            }
+            .tabItem {
+                Image(systemName: "timer")
+                Text("Сессия")
+            }
         }
     }
 }
