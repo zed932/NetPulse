@@ -14,7 +14,7 @@ struct AddFriendView: View {
         List {
             Section("Поиск по нику или QR‑токену") {
                 TextField("Никнейм или строка из QR", text: $viewModel.usernameQuery)
-                    .textFieldStyle(.roundedBorder)
+                    .appTextField()
                 Button("Найти") {
                     viewModel.searchByUsernameOrToken(userManager: userManager)
                 }
@@ -41,7 +41,7 @@ struct AddFriendView: View {
 
             Section("Поиск по имени, email или нику") {
                 TextField("Начните вводить имя, email или ник", text: $viewModel.searchQuery)
-                    .textFieldStyle(.roundedBorder)
+                    .appTextField()
             }
 
             Section("Можно добавить из списка") {

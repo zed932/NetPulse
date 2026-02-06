@@ -21,7 +21,7 @@ struct RegistrationView: View {
                         Text("Имя")
                             .font(.headline)
                         TextField("Введите ваше имя", text: $viewModel.name)
-                            .textFieldStyle(.roundedBorder)
+                            .appTextField()
                             .autocapitalization(.words)
                     }
 
@@ -29,7 +29,7 @@ struct RegistrationView: View {
                         Text("Email")
                             .font(.headline)
                         TextField("Введите email", text: $viewModel.email)
-                            .textFieldStyle(.roundedBorder)
+                            .appTextField()
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
                     }

@@ -46,7 +46,7 @@ struct ProfileView: View {
                     }
 
                     TextField("Или напишите свой статус…", text: $viewModel.customStatusText)
-                        .textFieldStyle(.roundedBorder)
+                        .appTextField()
 
                     Text("Если поле выше не пустое, будет использован ваш текстовый статус.")
                         .font(.footnote)
@@ -69,15 +69,23 @@ struct ProfileView: View {
                         Text("Избранные друзья")
                             .font(.headline)
 
-                        ForEach(favorites) { friend in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(friend.name)
-                                    Text(friend.displayStatus)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                        VStack(spacing: 0) {
+                            ForEach(Array(favorites.enumerated()), id: \.element.id) { index, friend in
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(friend.name)
+                                        Text(friend.displayStatus)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
                                 }
-                                Spacer()
+                                .padding(.vertical, 6)
+
+                                if index != favorites.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 4)
+                                }
                             }
                         }
                     }

@@ -38,7 +38,7 @@ struct FriendsListView: View {
                     }
                 } header: {
                     TextField("Поиск по имени или email", text: $viewModel.searchQuery)
-                        .textFieldStyle(.roundedBorder)
+                        .appTextField()
                 }
 
                 Section {

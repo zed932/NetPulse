@@ -80,3 +80,26 @@ extension View {
     }
 }
 
+private struct AppTextFieldModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+    }
+}
+
+extension View {
+    /// Единый стиль текстовых полей.
+    func appTextField() -> some View {
+        modifier(AppTextFieldModifier())
+    }
+}
+

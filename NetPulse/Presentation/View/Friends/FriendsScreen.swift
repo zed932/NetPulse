@@ -72,7 +72,7 @@ struct FriendsScreen: View {
             }
 
             TextField("Поиск по имени, email или нику", text: $friendsViewModel.searchQuery)
-                .textFieldStyle(.roundedBorder)
+                .appTextField()
 
             let allFriends = friendsViewModel.friends(userManager: userManager)
             if allFriends.isEmpty {

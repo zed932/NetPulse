@@ -18,36 +18,44 @@ struct MyQRView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            if let user = userManager.currentUser,
-               let image = generateQRCode(from: payload) {
-                Image(uiImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 220, height: 220)
+        ZStack {
+            AppTheme.background.ignoresSafeArea()
 
-                VStack(spacing: 8) {
-                    Text(user.name)
-                        .font(.headline)
-                    Text("@\(user.username)")
-                        .font(.subheadline)
+            VStack(spacing: 24) {
+                if let user = userManager.currentUser,
+                   let image = generateQRCode(from: payload) {
+                    VStack(spacing: 16) {
+                        Image(uiImage: image)
+                            .interpolation(.none)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 220, height: 220)
+
+                        VStack(spacing: 6) {
+                            Text(user.name)
+                                .font(.headline)
+                            Text("@\(user.username)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .appCard()
+
+                    Text("Попросите друга отсканировать этот QR или ввести строку:\n\(payload)")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                } else {
+                    Text("Нет данных пользователя.")
                         .foregroundColor(.secondary)
                 }
 
-                Text("Друзья могут отсканировать этот QR или ввести строку `\(payload)` в поиске по нику.")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 8)
-            } else {
-                Text("Нет данных пользователя.")
-                    .foregroundColor(.secondary)
+                Spacer()
             }
-            Spacer()
+            .padding()
         }
-        .padding()
-        .background(AppTheme.background.ignoresSafeArea())
         .navigationTitle("Мой QR")
         .navigationBarTitleDisplayMode(.inline)
     }
