@@ -5,7 +5,6 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
 /// Менеджер пользователей.
 /// Сейчас данные хранятся локально (UserDefaults);
@@ -27,9 +26,15 @@ final class UserManager: ObservableObject {
     }
 
     func updateCurrentUserStatus(_ newStatus: UserStatus) {
-        guard let index = allUsers.firstIndex(where: { $0.id == currentUser?.id }) else { return }
+        guard let id = currentUser?.id,
+              let index = allUsers.firstIndex(where: { $0.id == id }) else { return }
+
         allUsers[index].status = newStatus
-        currentUser?.status = newStatus
+        allUsers[index].customStatus = nil
+
+        var updated = allUsers[index]
+        updated.customStatus = nil
+        currentUser = updated
     }
 
     func registerNewUser(name: String, email: String) -> Bool {
@@ -72,6 +77,26 @@ final class UserManager: ObservableObject {
         }
     }
 
+    /// Обновить кастомный статус текущего пользователя.
+    func updateCurrentUserCustomStatus(_ newStatus: String?) {
+        guard let id = currentUser?.id,
+              let index = allUsers.firstIndex(where: { $0.id == id }) else { return }
+
+        let trimmed = newStatus?.trimmingCharacters(in: .whitespacesAndNewlines)
+        allUsers[index].customStatus = trimmed?.isEmpty == true ? nil : trimmed
+        currentUser = allUsers[index]
+        saveUsers()
+    }
+
+    /// Найти пользователя по никнейму или email.
+    func findUser(byUsernameOrEmail query: String) -> User? {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !q.isEmpty else { return nil }
+        return allUsers.first {
+            $0.username.lowercased() == q || $0.email.lowercased() == q
+        }
+    }
+
     private func saveUsers() {
         if let encoded = try? JSONEncoder().encode(allUsers) {
             UserDefaults.standard.set(encoded, forKey: "savedUsers")
@@ -89,10 +114,10 @@ final class UserManager: ObservableObject {
         loadUsers()
 
         let testUsers = [
-            User(name: "Анна", email: "anna@test.com"),
-            User(name: "Иван", email: "ivan@test.com", status: .offline),
-            User(name: "Мария", email: "maria@test.com", status: .studying),
-            User(name: "Алексей", email: "alex@test.com", status: .working)
+            User(name: "Анна", email: "anna@test.com", username: "anna"),
+            User(name: "Иван", email: "ivan@test.com", username: "ivan", status: .offline),
+            User(name: "Мария", email: "maria@test.com", username: "maria", status: .studying),
+            User(name: "Алексей", email: "alex@test.com", username: "alex", status: .working)
         ]
 
         allUsers = testUsers

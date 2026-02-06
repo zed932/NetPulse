@@ -40,7 +40,7 @@ struct HomeView: View {
                     Text("Текущий статус")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    Text(user.status.description)
+                    Text(user.displayStatus)
                         .font(.headline)
                 }
                 Spacer()
@@ -110,7 +110,7 @@ private struct FriendRowView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.name)
-                Text(user.status.description)
+                Text(user.displayStatus)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

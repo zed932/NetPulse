@@ -20,7 +20,7 @@ struct ProfileView: View {
                         Text("Текущий статус")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        Text(user.status.description)
+                        Text(user.displayStatus)
                             .font(.headline)
                             .foregroundColor(statusColor(for: user.status))
                     }
@@ -28,7 +28,7 @@ struct ProfileView: View {
                 .appCard()
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Изменить статус")
+                    Text("Быстрые статусы")
                         .font(.headline)
 
                     Picker("Статус", selection: $viewModel.selectedStatus) {
@@ -45,10 +45,45 @@ struct ProfileView: View {
                     Button {
                         viewModel.saveStatus(viewModel.selectedStatus, userManager: userManager)
                     } label: {
-                        Text("Сохранить статус")
+                        Text("Применить быстрый статус")
                     }
                     .buttonStyle(PrimaryButtonStyle())
                     .padding(.top, 4)
+                }
+                .appCard()
+
+                NavigationLink {
+                    MyQRView()
+                } label: {
+                    HStack {
+                        Image(systemName: "qrcode")
+                        VStack(alignment: .leading) {
+                            Text("Мой QR")
+                                .font(.headline)
+                            Text("По нему друзья смогут быстро найти вас.")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                }
+                .appCard()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Свой статус")
+                        .font(.headline)
+
+                    TextField("Напишите свой статус…", text: Binding(
+                        get: { user.customStatus ?? "" },
+                        set: { newValue in
+                            userManager.updateCurrentUserCustomStatus(newValue)
+                        }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+
+                    Text("Свой статус будет отображаться вместо предопределённого.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
                 .appCard()
 
