@@ -19,6 +19,11 @@ final class RegistrationViewModel: ObservableObject {
         email.contains("@")
     }
 
+    var canLoginWithEmail: Bool {
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+        return !trimmed.isEmpty && trimmed.contains("@")
+    }
+
     private static let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
 
     func register(userManager: UserManager) {
@@ -36,6 +41,23 @@ final class RegistrationViewModel: ObservableObject {
             // Успешная регистрация — переход произойдёт по изменению currentUser
         } else {
             errorMessage = "Пользователь с таким email уже существует"
+            showError = true
+        }
+    }
+
+    func loginExisting(userManager: UserManager) {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", Self.emailRegex)
+        guard emailPredicate.evaluate(with: trimmedEmail) else {
+            errorMessage = "Введите корректный email"
+            showError = true
+            return
+        }
+
+        if userManager.login(email: trimmedEmail) {
+            // currentUser обновится, UIKit сам переключит экран
+        } else {
+            errorMessage = "Пользователь с таким email не найден"
             showError = true
         }
     }

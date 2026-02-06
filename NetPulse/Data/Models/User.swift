@@ -6,7 +6,8 @@
 import Foundation
 
 struct User: Codable, Identifiable {
-    var status: UserStatus
+    /// Статус по умолчанию — онлайн.
+    var status: UserStatus = .online
     let id: UUID
     let name: String
     let email: String
@@ -14,7 +15,8 @@ struct User: Codable, Identifiable {
     let username: String
     /// Кастомный статус, заданный пользователем.
     var customStatus: String?
-    var friendsList: [UUID]
+    /// Список друзей — по умолчанию пустой (важно для декодирования из Firebase).
+    var friendsList: [UUID] = []
 
     init(
         id: UUID = UUID(),

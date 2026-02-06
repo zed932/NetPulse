@@ -9,6 +9,7 @@ struct AddFriendView: View {
     @EnvironmentObject var userManager: UserManager
     @StateObject private var viewModel = AddFriendViewModel()
     @Environment(\.dismiss) private var dismiss
+    @State private var isShowingScanner = false
 
     var body: some View {
         List {
@@ -18,6 +19,11 @@ struct AddFriendView: View {
                 Button("Найти") {
                     viewModel.searchByUsernameOrToken(userManager: userManager)
                 }
+                 Button {
+                     isShowingScanner = true
+                 } label: {
+                     Label("Сканировать QR", systemImage: "qrcode.viewfinder")
+                 }
 
                 if let user = viewModel.foundByUsername {
                     HStack {
@@ -70,5 +76,12 @@ struct AddFriendView: View {
         }
         .navigationTitle("Добавить друга")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isShowingScanner) {
+            QRScannerView { code in
+                isShowingScanner = false
+                viewModel.usernameQuery = code
+                viewModel.searchByUsernameOrToken(userManager: userManager)
+            }
+        }
     }
 }
