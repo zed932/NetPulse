@@ -12,6 +12,7 @@ struct ProfileView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let user = userManager.currentUser {
+                // Текущий статус
                 VStack(alignment: .leading, spacing: 12) {
                     Text(user.name)
                         .font(.title2.bold())
@@ -27,8 +28,9 @@ struct ProfileView: View {
                 }
                 .appCard()
 
+                // Выбор статуса (пресеты + кастомный) с одной кнопкой применения
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Быстрые статусы")
+                    Text("Статус")
                         .font(.headline)
 
                     Picker("Статус", selection: $viewModel.selectedStatus) {
@@ -40,52 +42,47 @@ struct ProfileView: View {
                     .pickerStyle(.segmented)
                     .onAppear {
                         viewModel.syncSelectedStatus(from: user)
+                        viewModel.customStatusText = user.customStatus ?? ""
                     }
 
+                    TextField("Или напишите свой статус…", text: $viewModel.customStatusText)
+                        .textFieldStyle(.roundedBorder)
+
+                    Text("Если поле выше не пустое, будет использован ваш текстовый статус.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+
                     Button {
-                        viewModel.saveStatus(viewModel.selectedStatus, userManager: userManager)
+                        viewModel.applyStatus(userManager: userManager)
                     } label: {
-                        Text("Применить быстрый статус")
+                        Text("Применить статус")
                     }
                     .buttonStyle(PrimaryButtonStyle())
                     .padding(.top, 4)
                 }
                 .appCard()
 
-                NavigationLink {
-                    MyQRView()
-                } label: {
-                    HStack {
-                        Image(systemName: "qrcode")
-                        VStack(alignment: .leading) {
-                            Text("Мой QR")
-                                .font(.headline)
-                            Text("По нему друзья смогут быстро найти вас.")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
+                // Избранные друзья (первые несколько)
+                let favorites = Array(userManager.friends().prefix(3))
+                if !favorites.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Избранные друзья")
+                            .font(.headline)
+
+                        ForEach(favorites) { friend in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(friend.name)
+                                    Text(friend.displayStatus)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                            }
                         }
-                        Spacer()
                     }
+                    .appCard()
                 }
-                .appCard()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Свой статус")
-                        .font(.headline)
-
-                    TextField("Напишите свой статус…", text: Binding(
-                        get: { user.customStatus ?? "" },
-                        set: { newValue in
-                            userManager.updateCurrentUserCustomStatus(newValue)
-                        }
-                    ))
-                    .textFieldStyle(.roundedBorder)
-
-                    Text("Свой статус будет отображаться вместо предопределённого.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
-                .appCard()
 
                 Spacer()
 
@@ -101,7 +98,7 @@ struct ProfileView: View {
         }
         .padding()
         .background(AppTheme.background.ignoresSafeArea())
-        .navigationTitle("Профиль")
+        .navigationTitle("Статус")
         .navigationBarTitleDisplayMode(.inline)
     }
 
