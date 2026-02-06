@@ -92,3 +92,32 @@ struct FriendsScreen: View {
     }
 }
 
+private struct FriendRowView: View {
+    let user: User
+    @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var userManager: UserManager
+    @State private var inviteTarget: User?
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(user.name)
+                Text(user.displayStatus)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            if user.status == .online {
+                Button("Пригласить") {
+                    inviteTarget = user
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .sheet(item: $inviteTarget) { friend in
+            SendInvitationView(friend: friend)
+        }
+    }
+}
+
+
