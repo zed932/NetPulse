@@ -42,6 +42,33 @@ class UserManager: ObservableObject {
         return true
     }
 
+    /// Добавить пользователя в друзья текущему пользователю.
+    func addFriend(_ user: User) -> Bool {
+        guard var current = currentUser else { return false }
+        guard current.id != user.id else { return false }
+        guard !current.friendsList.contains(user.id) else { return false }
+        guard let idx = allUsers.firstIndex(where: { $0.id == current.id }) else { return false }
+        current.addFriend(user.id)
+        allUsers[idx] = current
+        currentUser = current
+        saveUsers()
+        return true
+    }
+
+    /// Список друзей текущего пользователя (по ТЗ: просмотр друзей и их статусов).
+    func friends() -> [User] {
+        guard let current = currentUser else { return [] }
+        return allUsers.filter { current.friendsList.contains($0.id) }
+    }
+
+    /// Пользователи, которых ещё нет в друзьях у текущего.
+    func usersNotInFriendsList() -> [User] {
+        guard let current = currentUser else { return [] }
+        return allUsers.filter { user in
+            user.id != current.id && !current.friendsList.contains(user.id)
+        }
+    }
+
     private func saveUsers() {
         if let encoded = try? JSONEncoder().encode(allUsers) {
             UserDefaults.standard.set(encoded, forKey: "savedUsers")

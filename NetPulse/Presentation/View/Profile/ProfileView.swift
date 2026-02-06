@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var userManager: UserManager
-    @State private var selectedStatus: UserStatus = .online
+    @StateObject private var viewModel = ProfileViewModel()
 
     var body: some View {
         NavigationView {
@@ -35,7 +35,7 @@ struct ProfileView: View {
                                 .font(.headline)
                                 .foregroundColor(.gray)
 
-                            Picker("Статус", selection: $selectedStatus) {
+                            Picker("Статус", selection: $viewModel.selectedStatus) {
                                 ForEach(UserStatus.allCases, id: \.self) { status in
                                     Text(status.description)
                                         .tag(status)
@@ -43,12 +43,12 @@ struct ProfileView: View {
                             }
                             .pickerStyle(.segmented)
                             .onAppear {
-                                selectedStatus = user.status
+                                viewModel.syncSelectedStatus(from: user)
                             }
                         }
 
                         Button(action: {
-                            userManager.updateCurrentUserStatus(selectedStatus)
+                            viewModel.saveStatus(viewModel.selectedStatus, userManager: userManager)
                         }) {
                             Text("Сохранить статус")
                                 .font(.headline)
@@ -65,7 +65,7 @@ struct ProfileView: View {
                     Spacer()
 
                     Button("Выйти") {
-                        userManager.logout()
+                        viewModel.logout(userManager: userManager)
                     }
                     .foregroundColor(.red)
                     .padding(.bottom, 20)
