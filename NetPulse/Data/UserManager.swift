@@ -5,11 +5,13 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
-class UserManager: ObservableObject {
-    @Published var currentUser: User?
-    @Published var allUsers: [User] = []
+/// Менеджер пользователей.
+/// Сейчас данные хранятся локально (UserDefaults);
+/// далее по ТЗ планируется перенести хранение в Firebase.
+final class UserManager: ObservableObject {
+    @Published private(set) var currentUser: User?
+    @Published private(set) var allUsers: [User] = []
 
     func login(email: String) -> Bool {
         if let user = allUsers.first(where: { $0.email == email }) {

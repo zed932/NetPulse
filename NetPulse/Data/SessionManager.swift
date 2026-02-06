@@ -5,10 +5,9 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
 /// Менеджер сессий и приглашений (по ТЗ: отправка/приём/принятие/отклонение, синхронизированный таймер).
-/// Пока хранение in-memory; далее — синхронизация по WebSocket.
+/// Сейчас состояние хранится в памяти клиента; далее по ТЗ — синхронизация по WebSocket и Firebase.
 final class SessionManager: ObservableObject {
     @Published private(set) var invitations: [Invitation] = []
     @Published private(set) var activeSession: Session?

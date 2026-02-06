@@ -19,10 +19,10 @@
 
 ## Стек
 
-| Клиент | Сервер (по ТЗ) |
-|--------|-----------------|
+| Клиент | Сервер / БД (по ТЗ) |
+|--------|----------------------|
 | Swift, SwiftUI, Combine | Go, WebSocket |
-| Clean Architecture, MVVM | In-memory → MySQL |
+| Clean Architecture, MVVM | Локально (in-memory/UserDefaults) → Firebase (Cloud Firestore/Realtime DB) |
 
 ## Структура репозитория
 
