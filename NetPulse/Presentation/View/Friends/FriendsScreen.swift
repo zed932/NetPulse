@@ -107,6 +107,9 @@ private struct FriendRowView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+            Circle()
+                .fill(statusColor(for: user))
+                .frame(width: 10, height: 10)
             if user.status == .online {
                 Button("Пригласить") {
                     inviteTarget = user
@@ -116,6 +119,17 @@ private struct FriendRowView: View {
         }
         .sheet(item: $inviteTarget) { friend in
             SendInvitationView(friend: friend)
+        }
+    }
+
+    private func statusColor(for user: User) -> Color {
+        let hasCustom = (user.customStatus ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        if hasCustom { return .pink }
+        switch user.status {
+        case .online: return .green
+        case .offline: return .gray
+        case .working: return .orange
+        case .studying: return .blue
         }
     }
 }

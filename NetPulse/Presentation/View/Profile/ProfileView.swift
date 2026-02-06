@@ -12,19 +12,17 @@ struct ProfileView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let user = userManager.currentUser {
-                // Текущий статус
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(user.name)
-                        .font(.title2.bold())
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Текущий статус")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                // Плашка профиля во всю ширину
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(user.name)
+                            .font(.title2.bold())
                         Text(user.displayStatus)
-                            .font(.headline)
-                            .foregroundColor(statusColor(for: user.status))
+                            .font(.subheadline)
+                            .foregroundColor(statusColor(for: user))
                     }
+                    Spacer()
+                    avatarView(for: user)
                 }
                 .appCard()
 
@@ -110,12 +108,41 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func statusColor(for status: UserStatus) -> Color {
-        switch status {
+    private func statusColor(for user: User) -> Color {
+        let hasCustom = (user.customStatus ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        if hasCustom { return .pink }
+        switch user.status {
         case .online: return .green
         case .offline: return .gray
         case .working: return .orange
         case .studying: return .blue
         }
+    }
+
+    private func avatarView(for user: User) -> some View {
+        let components = user.name
+            .split(separator: " ")
+            .prefix(2)
+        let initials = components
+            .compactMap { $0.first }
+            .map { String($0) }
+            .joined()
+            .uppercased()
+
+        return ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.primary.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            Text(initials.isEmpty ? "N" : initials)
+                .font(.headline)
+                .foregroundColor(.white)
+        }
+        .frame(width: 44, height: 44)
+        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
     }
 }
