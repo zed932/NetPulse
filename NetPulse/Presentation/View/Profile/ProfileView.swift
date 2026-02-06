@@ -10,70 +10,64 @@ struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                if let user = userManager.currentUser {
-                    Text("Привет, \(user.name)!")
-                        .font(.title)
-                        .padding(.top)
+        VStack(spacing: 16) {
+            if let user = userManager.currentUser {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(user.name)
+                        .font(.title2.bold())
 
-                    VStack(spacing: 15) {
-                        VStack {
-                            Text("Текущий статус:")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                            Text(user.status.description)
-                                .font(.title2)
-                                .foregroundColor(statusColor(for: user.status))
-                        }
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Изменить статус:")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-
-                            Picker("Статус", selection: $viewModel.selectedStatus) {
-                                ForEach(UserStatus.allCases, id: \.self) { status in
-                                    Text(status.description)
-                                        .tag(status)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .onAppear {
-                                viewModel.syncSelectedStatus(from: user)
-                            }
-                        }
-
-                        Button(action: {
-                            viewModel.saveStatus(viewModel.selectedStatus, userManager: userManager)
-                        }) {
-                            Text("Сохранить статус")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        .padding(.top)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Текущий статус")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Text(user.status.description)
+                            .font(.headline)
+                            .foregroundColor(statusColor(for: user.status))
                     }
-                    .padding(.horizontal)
-
-                    Spacer()
-
-                    Button("Выйти") {
-                        viewModel.logout(userManager: userManager)
-                    }
-                    .foregroundColor(.red)
-                    .padding(.bottom, 20)
                 }
+                .appCard()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Изменить статус")
+                        .font(.headline)
+
+                    Picker("Статус", selection: $viewModel.selectedStatus) {
+                        ForEach(UserStatus.allCases, id: \.self) { status in
+                            Text(status.description)
+                                .tag(status)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onAppear {
+                        viewModel.syncSelectedStatus(from: user)
+                    }
+
+                    Button {
+                        viewModel.saveStatus(viewModel.selectedStatus, userManager: userManager)
+                    } label: {
+                        Text("Сохранить статус")
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.top, 4)
+                }
+                .appCard()
+
+                Spacer()
+
+                Button(role: .destructive) {
+                    viewModel.logout(userManager: userManager)
+                } label: {
+                    Text("Выйти из аккаунта")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .padding(.bottom, 20)
             }
-            .navigationTitle("Профиль")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .padding()
+        .background(AppTheme.background.ignoresSafeArea())
+        .navigationTitle("Профиль")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func statusColor(for status: UserStatus) -> Color {

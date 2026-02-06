@@ -11,19 +11,15 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            ProfileView()
+            NavigationStack {
+                HomeView()
+            }
                 .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("Профиль")
+                    Image(systemName: "house.fill")
+                    Text("Главная")
                 }
 
-            FriendsListView()
-                .tabItem {
-                    Image(systemName: "person.2.fill")
-                    Text("Друзья")
-                }
-
-            NavigationView {
+            NavigationStack {
                 ActiveSessionView()
             }
             .tabItem {
