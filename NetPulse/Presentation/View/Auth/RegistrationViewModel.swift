@@ -55,7 +55,9 @@ final class RegistrationViewModel: ObservableObject {
         }
 
         if userManager.login(email: trimmedEmail) {
-            // currentUser обновится, UIKit сам переключит экран
+            Task { @MainActor in
+                await userManager.refreshFriendRequestsAsync()
+            }
         } else {
             errorMessage = "Пользователь с таким email не найден"
             showError = true

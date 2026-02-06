@@ -24,8 +24,15 @@ final class AddFriendViewModel: ObservableObject {
         }
     }
 
-    func addFriend(_ user: User, userManager: UserManager) -> Bool {
-        userManager.addFriend(user)
+    /// Отправить заявку в друзья (вместо мгновенного добавления).
+    func sendFriendRequest(to user: User, userManager: UserManager) -> Bool {
+        userManager.sendFriendRequest(to: user)
+    }
+
+    /// Уже отправлена заявка этому пользователю?
+    func hasPendingRequest(to user: User?, userManager: UserManager) -> Bool {
+        guard let user else { return false }
+        return userManager.hasPendingSentRequest(to: user.id)
     }
 
     func searchByUsernameOrToken(userManager: UserManager) {

@@ -18,6 +18,33 @@ struct User: Codable, Identifiable {
     /// Список друзей — по умолчанию пустой (важно для декодирования из Firebase).
     var friendsList: [UUID] = []
 
+    private enum CodingKeys: String, CodingKey {
+        case id, name, email, username, status, customStatus, friendsList
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        email = try c.decode(String.self, forKey: .email)
+        let decodedUsername = try c.decodeIfPresent(String.self, forKey: .username)
+        username = decodedUsername ?? User.makeUsername(name: name, email: email)
+        status = (try c.decodeIfPresent(UserStatus.self, forKey: .status)) ?? .online
+        customStatus = try c.decodeIfPresent(String.self, forKey: .customStatus)
+        friendsList = (try c.decodeIfPresent([UUID].self, forKey: .friendsList)) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(email, forKey: .email)
+        try c.encode(username, forKey: .username)
+        try c.encode(status, forKey: .status)
+        try c.encodeIfPresent(customStatus, forKey: .customStatus)
+        try c.encode(friendsList, forKey: .friendsList)
+    }
+
     init(
         id: UUID = UUID(),
         name: String,

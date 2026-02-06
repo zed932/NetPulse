@@ -49,7 +49,10 @@ struct RegistrationView: View {
                     .opacity(viewModel.isFormValid ? 1 : 0.5)
 
                     Button {
-                        viewModel.loginExisting(userManager: userManager)
+                        Task { @MainActor in
+                            await userManager.refreshFromFirebaseAsync()
+                            viewModel.loginExisting(userManager: userManager)
+                        }
                     } label: {
                         Text("Войти в существующий аккаунт")
                     }

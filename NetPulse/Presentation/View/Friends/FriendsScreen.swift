@@ -15,6 +15,7 @@ struct FriendsScreen: View {
         ScrollView {
             VStack(spacing: 16) {
                 qrSection
+                friendRequestsSection
                 invitationsSection
                 friendsSection
             }
@@ -23,6 +24,18 @@ struct FriendsScreen: View {
         .background(AppTheme.background.ignoresSafeArea())
         .navigationTitle("Друзья")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear {
+            userManager.refreshFriendRequests()
+        }
+    }
+
+    private var friendRequestsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Входящие заявки в друзья")
+                .font(.headline)
+            IncomingFriendRequestsView()
+        }
+        .appCard()
     }
 
     private var qrSection: some View {
