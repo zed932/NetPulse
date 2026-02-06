@@ -7,10 +7,15 @@ import SwiftUI
 
 /// Общие стили и тема приложения.
 enum AppTheme {
+    static let cornerRadius: CGFloat = 14
+
+    /// Фон экрана, корректный для light/dark.
     static let background = Color(.systemGroupedBackground)
+    /// Фон карточек, корректный для light/dark.
     static let cardBackground = Color(.secondarySystemGroupedBackground)
+
     static let primary = Color.accentColor
-    static let destructive = Color.red
+    static let destructive = Color(.systemRed)
 }
 
 struct PrimaryButtonStyle: ButtonStyle {
@@ -19,10 +24,15 @@ struct PrimaryButtonStyle: ButtonStyle {
             .font(.headline)
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(AppTheme.primary)
-            .cornerRadius(12)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .fill(AppTheme.primary)
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: configuration.isPressed)
     }
 }
 
@@ -32,10 +42,18 @@ struct SecondaryButtonStyle: ButtonStyle {
             .font(.headline)
             .foregroundColor(AppTheme.primary)
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(AppTheme.cardBackground)
-            .cornerRadius(12)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .fill(AppTheme.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .strokeBorder(AppTheme.primary.opacity(0.12), lineWidth: 1)
+            )
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: configuration.isPressed)
     }
 }
 
@@ -43,8 +61,15 @@ private struct CardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
-            .background(AppTheme.cardBackground)
-            .cornerRadius(16)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .fill(AppTheme.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.03), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 3)
     }
 }
 

@@ -12,31 +12,39 @@ struct ActiveSessionView: View {
     private var session: Session? { sessionManager.activeSession }
 
     var body: some View {
-        Group {
+        ZStack {
+            AppTheme.background.ignoresSafeArea()
+
             if let session = session {
                 VStack(spacing: 24) {
-                    Text(session.sessionType.description)
-                        .font(.title2)
-                        .foregroundColor(.secondary)
+                    VStack(spacing: 8) {
+                        Text(session.sessionType.description)
+                            .font(.title2.weight(.semibold))
+                            .foregroundColor(.secondary)
 
-                    Text(formattedRemaining)
-                        .font(.system(size: 56, weight: .light, design: .monospaced))
-                        .contentTransition(.numericText())
+                        Text(formattedRemaining)
+                            .font(.system(size: 56, weight: .light, design: .monospaced))
+                            .contentTransition(.numericText())
+                            .monospacedDigit()
+                            .animation(.easeInOut(duration: 0.25), value: sessionManager.sessionRemainingSeconds)
 
-                    Text("осталось")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        Text("осталось")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 24)
+                    .frame(maxWidth: .infinity)
+                    .appCard()
 
                     Spacer()
 
                     Button("Завершить сессию") {
                         sessionManager.endSession()
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
+                    .buttonStyle(PrimaryButtonStyle())
+                    .tint(AppTheme.destructive)
                     .padding(.bottom, 32)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
             } else {
                 ContentUnavailableView(
