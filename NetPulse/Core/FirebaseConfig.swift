@@ -6,9 +6,8 @@
 import Foundation
 
 /// Конфигурация Firebase Realtime Database.
-/// TODO: заполни `databaseURL` из консоля Firebase, например:
-/// https://your-project-id-default-rtdb.europe-west1.firebasedatabase.app
+/// URL взят из консоли Firebase для проекта NetPulse.
 enum FirebaseConfig {
-    static let databaseURL: String = ""
+    static let databaseURL: String = "https://netpulse-75ea3-default-rtdb.firebaseio.com"
 }
 

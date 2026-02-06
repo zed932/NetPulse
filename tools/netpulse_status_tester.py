@@ -15,9 +15,8 @@ from dataclasses import dataclass
 
 import requests
 
-# TODO: подставь URL своей базы:
-# пример: "https://your-project-id-default-rtdb.europe-west1.firebasedatabase.app"
-DATABASE_URL = ""
+# URL базы Firebase Realtime Database для NetPulse:
+DATABASE_URL = "https://netpulse-75ea3-default-rtdb.firebaseio.com"
 
 
 @dataclass
