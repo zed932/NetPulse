@@ -5,7 +5,6 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
 /// Менеджер пользователей.
 /// Сейчас данные хранятся локально (UserDefaults);
@@ -13,6 +12,8 @@ import Combine
 final class UserManager: ObservableObject {
     @Published private(set) var currentUser: User?
     @Published private(set) var allUsers: [User] = []
+
+    private let firebaseService = FirebaseUserService()
 
     func login(email: String) -> Bool {
         if let user = allUsers.first(where: { $0.email == email }) {
@@ -95,6 +96,24 @@ final class UserManager: ObservableObject {
         guard !q.isEmpty else { return nil }
         return allUsers.first {
             $0.username.lowercased() == q || $0.email.lowercased() == q
+        }
+    }
+
+    /// Обновить список пользователей из Firebase.
+    /// Используется кнопкой «Обновить» на экранах Статус/Друзья.
+    @MainActor
+    func refreshFromFirebase() {
+        Task {
+            let remoteUsers = try? await firebaseService.fetchUsers()
+            guard let users = remoteUsers, !users.isEmpty else { return }
+
+            await MainActor.run {
+                self.allUsers = users
+                if let currentId = self.currentUser?.id {
+                    self.currentUser = users.first(where: { $0.id == currentId })
+                }
+                self.saveUsers()
+            }
         }
     }
 

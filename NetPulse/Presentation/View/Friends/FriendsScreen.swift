@@ -62,6 +62,13 @@ struct FriendsScreen: View {
                 Text("Все друзья")
                     .font(.headline)
                 Spacer()
+                Button {
+                    userManager.refreshFromFirebase()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.plain)
                 NavigationLink {
                     AddFriendView()
                 } label: {

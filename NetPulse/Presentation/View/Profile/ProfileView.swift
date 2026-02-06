@@ -64,8 +64,18 @@ struct ProfileView: View {
                 let favorites = Array(userManager.friends().prefix(3))
                 if !favorites.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Избранные друзья")
-                            .font(.headline)
+                        HStack {
+                            Text("Избранные друзья")
+                                .font(.headline)
+                            Spacer()
+                            Button {
+                                userManager.refreshFromFirebase()
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .buttonStyle(.plain)
+                        }
 
                         VStack(spacing: 0) {
                             ForEach(Array(favorites.enumerated()), id: \.element.id) { index, friend in
