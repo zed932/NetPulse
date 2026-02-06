@@ -37,6 +37,11 @@ final class UserManager: ObservableObject {
         var updated = allUsers[index]
         updated.customStatus = nil
         currentUser = updated
+        saveUsers()
+
+        Task {
+            await firebaseService.updateUserStatus(updated)
+        }
     }
 
     func registerNewUser(name: String, email: String) -> Bool {
@@ -49,6 +54,10 @@ final class UserManager: ObservableObject {
         saveUsers()
 
         currentUser = newUser
+
+        Task {
+            await firebaseService.updateUserStatus(newUser)
+        }
         return true
     }
 
@@ -86,8 +95,13 @@ final class UserManager: ObservableObject {
 
         let trimmed = newStatus?.trimmingCharacters(in: .whitespacesAndNewlines)
         allUsers[index].customStatus = trimmed?.isEmpty == true ? nil : trimmed
-        currentUser = allUsers[index]
+        let updated = allUsers[index]
+        currentUser = updated
         saveUsers()
+
+        Task {
+            await firebaseService.updateUserStatus(updated)
+        }
     }
 
     /// Найти пользователя по никнейму или email.
@@ -142,5 +156,8 @@ final class UserManager: ObservableObject {
 
         allUsers = testUsers
         saveUsers()
+
+        // Попробуем подтянуть реальные данные из Firebase в фоне.
+        refreshFromFirebase()
     }
 }
