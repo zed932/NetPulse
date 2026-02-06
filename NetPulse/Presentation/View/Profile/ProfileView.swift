@@ -77,6 +77,9 @@ struct ProfileView: View {
                                             .foregroundColor(.secondary)
                                     }
                                     Spacer()
+                                    Circle()
+                                        .fill(statusColor(for: friend))
+                                        .frame(width: 10, height: 10)
                                 }
                                 .padding(.vertical, 6)
 

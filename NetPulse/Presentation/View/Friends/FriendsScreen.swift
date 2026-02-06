@@ -65,10 +65,14 @@ struct FriendsScreen: View {
                 NavigationLink {
                     AddFriendView()
                 } label: {
-                    Label("Добавить", systemImage: "person.badge.plus")
-                        .labelStyle(.titleAndIcon)
+                    Image(systemName: "person.badge.plus")
+                        .font(.body.weight(.semibold))
+                        .padding(8)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                                .fill(AppTheme.cardBackground)
+                        )
                 }
-                .buttonStyle(SecondaryButtonStyle())
             }
 
             TextField("Поиск по имени, email или нику", text: $friendsViewModel.searchQuery)
