@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 /// Менеджер пользователей.
 /// Сейчас данные хранятся локально (UserDefaults);

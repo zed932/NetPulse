@@ -12,12 +12,20 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                HomeView()
+                ProfileView()
             }
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Главная")
-                }
+            .tabItem {
+                Image(systemName: "person.crop.circle")
+                Text("Статус")
+            }
+
+            NavigationStack {
+                FriendsScreen()
+            }
+            .tabItem {
+                Image(systemName: "person.2.fill")
+                Text("Друзья")
+            }
 
             NavigationStack {
                 ActiveSessionView()
