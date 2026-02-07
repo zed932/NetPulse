@@ -45,13 +45,21 @@ struct RegistrationView: View {
 
     private var signInForm: some View {
         VStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Email")
-                    .font(.headline)
-                TextField("Введите email", text: $viewModel.email)
-                    .appTextField()
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Email")
+                        .font(.headline)
+                    TextField("Введите email", text: $viewModel.email)
+                        .appTextField()
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Пароль")
+                        .font(.headline)
+                    SecureField("Введите пароль", text: $viewModel.password)
+                        .appTextField()
+                }
             }
             .appCard()
 
@@ -61,8 +69,8 @@ struct RegistrationView: View {
                 Text("Войти")
             }
             .buttonStyle(PrimaryButtonStyle())
-            .disabled(!viewModel.canLoginWithEmail)
-            .opacity(viewModel.canLoginWithEmail ? 1 : 0.5)
+            .disabled(!viewModel.canSignIn)
+            .opacity(viewModel.canSignIn ? 1 : 0.5)
         }
         .padding(.horizontal)
     }
@@ -84,6 +92,18 @@ struct RegistrationView: View {
                         .appTextField()
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Пароль")
+                        .font(.headline)
+                    SecureField("Не короче 6 символов", text: $viewModel.password)
+                        .appTextField()
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Повторите пароль")
+                        .font(.headline)
+                    SecureField("Введите пароль ещё раз", text: $viewModel.confirmPassword)
+                        .appTextField()
                 }
             }
             .appCard()

@@ -17,9 +17,13 @@ struct User: Codable, Identifiable {
     var customStatus: String?
     /// Список друзей — по умолчанию пустой (важно для декодирования из Firebase).
     var friendsList: [UUID] = []
+    /// Хеш пароля (hex), для входа по паролю.
+    var passwordHash: String?
+    /// Соль для проверки пароля (hex).
+    var passwordSalt: String?
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, email, username, status, customStatus, friendsList
+        case id, name, email, username, status, customStatus, friendsList, passwordHash, passwordSalt
     }
 
     init(from decoder: Decoder) throws {
@@ -32,6 +36,8 @@ struct User: Codable, Identifiable {
         status = (try c.decodeIfPresent(UserStatus.self, forKey: .status)) ?? .online
         customStatus = try c.decodeIfPresent(String.self, forKey: .customStatus)
         friendsList = (try c.decodeIfPresent([UUID].self, forKey: .friendsList)) ?? []
+        passwordHash = try c.decodeIfPresent(String.self, forKey: .passwordHash)
+        passwordSalt = try c.decodeIfPresent(String.self, forKey: .passwordSalt)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -43,6 +49,8 @@ struct User: Codable, Identifiable {
         try c.encode(status, forKey: .status)
         try c.encodeIfPresent(customStatus, forKey: .customStatus)
         try c.encode(friendsList, forKey: .friendsList)
+        try c.encodeIfPresent(passwordHash, forKey: .passwordHash)
+        try c.encodeIfPresent(passwordSalt, forKey: .passwordSalt)
     }
 
     init(
@@ -52,7 +60,8 @@ struct User: Codable, Identifiable {
         username: String? = nil,
         status: UserStatus = .online,
         friendsList: [UUID] = [],
-        customStatus: String? = nil
+        customStatus: String? = nil,
+        password: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -61,6 +70,14 @@ struct User: Codable, Identifiable {
         self.status = status
         self.friendsList = friendsList
         self.customStatus = customStatus
+        if let password = password, !password.isEmpty {
+            let (saltHex, hashHex) = PasswordHasher.hashForStorage(password: password)
+            self.passwordSalt = saltHex
+            self.passwordHash = hashHex
+        } else {
+            self.passwordHash = nil
+            self.passwordSalt = nil
+        }
     }
 
     /// Отображаемый статус: сначала кастомный, потом предопределённый.

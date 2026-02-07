@@ -22,15 +22,19 @@ final class UserManager: ObservableObject {
 
     private static let currentUserIdKey = "currentUserId"
 
-    func login(email: String) -> Bool {
+    func login(email: String, password: String) -> Bool {
         let lower = email.trimmingCharacters(in: .whitespaces).lowercased()
+        let pwd = password
         guard !lower.isEmpty else { return false }
-        if let user = allUsers.first(where: { $0.email.lowercased() == lower }) {
-            currentUser = user
-            saveCurrentUserId(user.id)
-            return true
+        guard let user = allUsers.first(where: { $0.email.lowercased() == lower }) else { return false }
+        if let saltHex = user.passwordSalt, let hashHex = user.passwordHash {
+            guard PasswordHasher.verify(password: pwd, saltHex: saltHex, hashHex: hashHex) else { return false }
+        } else {
+            return false
         }
-        return false
+        currentUser = user
+        saveCurrentUserId(user.id)
+        return true
     }
 
     func logout() {
@@ -55,11 +59,11 @@ final class UserManager: ObservableObject {
         }
     }
 
-    func registerNewUser(name: String, email: String) -> Bool {
-        guard !allUsers.contains(where: { $0.email == email}) else {
+    func registerNewUser(name: String, email: String, password: String) -> Bool {
+        guard !allUsers.contains(where: { $0.email.lowercased() == email.trimmingCharacters(in: .whitespaces).lowercased() }) else {
             return false
         }
-        let newUser = User(name: name, email: email)
+        let newUser = User(name: name.trimmingCharacters(in: .whitespaces), email: email.trimmingCharacters(in: .whitespaces).lowercased(), password: password)
         allUsers.append(newUser)
 
         saveUsers()
