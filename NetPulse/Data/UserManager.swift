@@ -187,17 +187,19 @@ final class UserManager: ObservableObject {
         sentFriendRequests = requests.filter { $0.fromUserId == currentId }
     }
 
-    /// Список друзей текущего пользователя (по ТЗ: просмотр друзей и их статусов).
+    /// Список друзей текущего пользователя (просмотр друзей и их статусов).
     func friends() -> [User] {
         guard let current = currentUser else { return [] }
-        return allUsers.filter { current.friendsList.contains($0.id) }
+        let friendIds = Set(current.friendsList)
+        return allUsers.filter { friendIds.contains($0.id) }
     }
 
     /// Пользователи, которых ещё нет в друзьях у текущего.
     func usersNotInFriendsList() -> [User] {
         guard let current = currentUser else { return [] }
+        let friendIds = Set(current.friendsList)
         return allUsers.filter { user in
-            user.id != current.id && !current.friendsList.contains(user.id)
+            user.id != current.id && !friendIds.contains(user.id)
         }
     }
 
@@ -238,41 +240,51 @@ final class UserManager: ObservableObject {
     /// Синхронное ожидание обновления из Firebase (для входа: сначала подтянуть пользователей, потом искать по email).
     @MainActor
     func refreshFromFirebaseAsync() async {
-        // Сохраняем локальные данные (в том числе friendsList), чтобы не потерять их при обновлении.
         let localUsers = allUsers
-
         let remoteUsers = try? await firebaseService.fetchUsers()
-        guard var users = remoteUsers, !users.isEmpty else { return }
+        guard let remote = remoteUsers, !remote.isEmpty else { return }
 
-        // Объединяем списки друзей: локальный + из Firebase (заявки при принятии пишутся в Firebase).
-        for index in users.indices {
-            let remoteIds = Set(users[index].friendsList)
-            let localIds = localUsers.first(where: { $0.id == users[index].id }).map { Set($0.friendsList) } ?? []
-            let merged = remoteIds.union(localIds ?? [])
-            users[index].friendsList = Array(merged)
-        }
+        // Тяжёлый merge выполняем не на main, чтобы не блокировать UI.
+        let merged = await Task.detached(priority: .userInitiated) {
+            Self.mergeUsers(remote: remote, local: localUsers)
+        }.value
 
-        allUsers = users
-
+        allUsers = merged
         if let currentId = currentUser?.id {
-            currentUser = users.first(where: { $0.id == currentId }) ?? currentUser
+            currentUser = merged.first(where: { $0.id == currentId }) ?? currentUser
         } else {
             restoreCurrentUserIfNeeded()
         }
-
         saveUsers()
+        await refreshFriendRequestsAsync()
+    }
 
-        Task { await refreshFriendRequestsAsync() }
+    /// Слияние списков друзей: remote + local (без привязки к main thread).
+    private static func mergeUsers(remote: [User], local: [User]) -> [User] {
+        var result = remote
+        let localById = Dictionary(uniqueKeysWithValues: local.map { ($0.id, $0) })
+        for index in result.indices {
+            let remoteIds = Set(result[index].friendsList)
+            let localIds = localById[result[index].id].map { Set($0.friendsList) } ?? []
+            result[index].friendsList = Array(remoteIds.union(localIds))
+        }
+        return result
     }
 
     private func saveUsers() {
-        if let encoded = try? JSONEncoder().encode(allUsers) {
-            UserDefaults.standard.set(encoded, forKey: "savedUsers")
+        let copy = allUsers
+        let key = Self.savedUsersKey
+        Task.detached(priority: .utility) {
+            if let encoded = try? JSONEncoder().encode(copy) {
+                UserDefaults.standard.set(encoded, forKey: key)
+            }
         }
     }
 
+    private static let savedUsersKey = "savedUsers"
+
     private func loadUsers() {
-        if let savedUsers = UserDefaults.standard.data(forKey: "savedUsers"),
+        if let savedUsers = UserDefaults.standard.data(forKey: Self.savedUsersKey),
            let decoded = try? JSONDecoder().decode([User].self, from: savedUsers) {
             allUsers = decoded
         }

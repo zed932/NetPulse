@@ -51,8 +51,8 @@ struct AddFriendView: View {
             Section("Поиск по имени, email или нику") {
                 TextField("Введите имя, email или ник", text: $viewModel.searchQuery)
                     .appTextField()
-                let results = viewModel.addableUsers(userManager: userManager)
-                if !viewModel.searchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
+                let results = viewModel.addableUsers(userManager: userManager, query: viewModel.debouncedSearchQuery)
+                if !viewModel.debouncedSearchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
                     if results.isEmpty {
                         Text("Никого не найдено")
                             .font(.subheadline)

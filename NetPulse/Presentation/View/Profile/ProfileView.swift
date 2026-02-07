@@ -26,39 +26,9 @@ struct ProfileView: View {
                 }
                 .appCard()
 
-                // Выбор статуса (пресеты + кастомный) с одной кнопкой применения
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Статус")
-                        .font(.headline)
-
-                    Picker("Статус", selection: $viewModel.selectedStatus) {
-                        ForEach(UserStatus.allCases, id: \.self) { status in
-                            Text(status.description)
-                                .tag(status)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .onAppear {
-                        viewModel.syncSelectedStatus(from: user)
-                        viewModel.customStatusText = user.customStatus ?? ""
-                    }
-
-                    TextField("Или напишите свой статус…", text: $viewModel.customStatusText)
-                        .appTextField()
-
-                    Text("Если поле выше не пустое, будет использован ваш текстовый статус.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-
-                    Button {
-                        viewModel.applyStatus(userManager: userManager)
-                    } label: {
-                        Text("Применить статус")
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .padding(.top, 4)
-                }
-                .appCard()
+                StatusFormCard(viewModel: viewModel, initialUser: user, onApply: {
+                    viewModel.applyStatus(userManager: userManager)
+                })
 
                 // Избранные друзья (первые несколько)
                 let favorites = Array(userManager.friends().prefix(3))
@@ -158,5 +128,40 @@ struct ProfileView: View {
         }
         .frame(width: 44, height: 44)
         .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Форма статуса вынесена отдельно, чтобы ввод в TextField не тянул за собой пересчёт всего экрана.
+private struct StatusFormCard: View {
+    @ObservedObject var viewModel: ProfileViewModel
+    let initialUser: User
+    let onApply: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Статус")
+                .font(.headline)
+            Picker("Статус", selection: $viewModel.selectedStatus) {
+                ForEach(UserStatus.allCases, id: \.self) { status in
+                    Text(status.description).tag(status)
+                }
+            }
+            .pickerStyle(.segmented)
+            .onAppear {
+                viewModel.syncSelectedStatus(from: initialUser)
+                viewModel.customStatusText = initialUser.customStatus ?? ""
+            }
+            TextField("Или напишите свой статус…", text: $viewModel.customStatusText)
+                .appTextField()
+            Text("Если поле выше не пустое, будет использован ваш текстовый статус.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+            Button(action: onApply) {
+                Text("Применить статус")
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .padding(.top, 4)
+        }
+        .appCard()
     }
 }

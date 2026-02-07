@@ -9,12 +9,22 @@ import Combine
 /// ViewModel экрана «Добавить друга» (MVVM).
 final class AddFriendViewModel: ObservableObject {
     @Published var searchQuery = ""
+    /// Поиск с задержкой 0.3 с, чтобы не фильтровать список на каждый символ.
+    @Published var debouncedSearchQuery = ""
     @Published var usernameQuery = ""
     @Published var foundByUsername: User?
 
-    /// Пользователи, найденные по поиску (ник/email/имя). Пустой запрос — пустой список (не показываем всех пользователей).
-    func addableUsers(userManager: UserManager) -> [User] {
-        let q = searchQuery.trimmingCharacters(in: .whitespaces)
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        $searchQuery
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .assign(to: &$debouncedSearchQuery)
+    }
+
+    /// Пользователи, найденные по поиску (ник/email/имя). Используется debouncedSearchQuery.
+    func addableUsers(userManager: UserManager, query: String) -> [User] {
+        let q = query.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty else { return [] }
         let list = userManager.usersNotInFriendsList()
         return list.filter {
@@ -24,12 +34,10 @@ final class AddFriendViewModel: ObservableObject {
         }
     }
 
-    /// Отправить заявку в друзья (вместо мгновенного добавления).
     func sendFriendRequest(to user: User, userManager: UserManager) -> Bool {
         userManager.sendFriendRequest(to: user)
     }
 
-    /// Уже отправлена заявка этому пользователю?
     func hasPendingRequest(to user: User?, userManager: UserManager) -> Bool {
         guard let user else { return false }
         return userManager.hasPendingSentRequest(to: user.id)
@@ -41,7 +49,6 @@ final class AddFriendViewModel: ObservableObject {
             foundByUsername = nil
             return
         }
-
         let username: String
         let prefix = "netpulse:user:"
         if raw.lowercased().hasPrefix(prefix) {
@@ -49,7 +56,6 @@ final class AddFriendViewModel: ObservableObject {
         } else {
             username = raw
         }
-
         foundByUsername = userManager.findUser(byUsernameOrEmail: username)
     }
 }
