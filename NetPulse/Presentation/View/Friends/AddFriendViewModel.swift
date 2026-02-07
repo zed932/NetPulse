@@ -12,11 +12,11 @@ final class AddFriendViewModel: ObservableObject {
     @Published var usernameQuery = ""
     @Published var foundByUsername: User?
 
-    /// Пользователи, не в друзьях, с учётом поиска.
+    /// Пользователи, найденные по поиску (ник/email/имя). Пустой запрос — пустой список (не показываем всех пользователей).
     func addableUsers(userManager: UserManager) -> [User] {
-        let list = userManager.usersNotInFriendsList()
-        guard !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty else { return list }
         let q = searchQuery.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return [] }
+        let list = userManager.usersNotInFriendsList()
         return list.filter {
             $0.name.localizedCaseInsensitiveContains(q)
             || $0.email.localizedCaseInsensitiveContains(q)

@@ -109,9 +109,10 @@ struct ProfileView: View {
                     viewModel.logout(userManager: userManager)
                 } label: {
                     Text("Выйти из аккаунта")
-                        .frame(maxWidth: .infinity)
+                        .font(.subheadline)
                 }
-                .buttonStyle(SecondaryButtonStyle())
+                .buttonStyle(.plain)
+                .padding(.top, 8)
                 .padding(.bottom, 20)
             }
         }

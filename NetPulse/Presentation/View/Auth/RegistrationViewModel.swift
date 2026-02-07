@@ -6,10 +6,11 @@
 import Foundation
 import Combine
 
-/// ViewModel экрана регистрации/входа (MVVM).
+/// ViewModel экрана входа и регистрации (MVVM).
 final class RegistrationViewModel: ObservableObject {
     @Published var name = ""
     @Published var email = ""
+    @Published var isSignUp = false
     @Published var showError = false
     @Published var errorMessage = ""
 
@@ -25,6 +26,26 @@ final class RegistrationViewModel: ObservableObject {
     }
 
     private static let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+
+    func signIn(userManager: UserManager) {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", Self.emailRegex)
+        guard emailPredicate.evaluate(with: trimmedEmail) else {
+            errorMessage = "Введите корректный email"
+            showError = true
+            return
+        }
+
+        if userManager.login(email: trimmedEmail) {
+            Task { @MainActor in
+                await userManager.refreshFromFirebaseAsync()
+                await userManager.refreshFriendRequestsAsync()
+            }
+        } else {
+            errorMessage = "Пользователь с таким email не найден"
+            showError = true
+        }
+    }
 
     func register(userManager: UserManager) {
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", Self.emailRegex)
@@ -45,26 +66,4 @@ final class RegistrationViewModel: ObservableObject {
         }
     }
 
-    func loginExisting(userManager: UserManager) {
-        let trimmedEmail = email.trimmingCharacters(in: .whitespaces)
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", Self.emailRegex)
-        guard emailPredicate.evaluate(with: trimmedEmail) else {
-            errorMessage = "Введите корректный email"
-            showError = true
-            return
-        }
-
-        if userManager.login(email: trimmedEmail) {
-            Task { @MainActor in
-                await userManager.refreshFriendRequestsAsync()
-            }
-        } else {
-            errorMessage = "Пользователь с таким email не найден"
-            showError = true
-        }
-    }
-
-    func loginTestUser(userManager: UserManager) {
-        _ = userManager.login(email: "anna@test.com")
-    }
 }

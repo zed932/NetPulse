@@ -20,11 +20,14 @@ final class UserManager: ObservableObject {
 
     private let firebaseService = FirebaseUserService()
 
+    private static let currentUserIdKey = "currentUserId"
+
     func login(email: String) -> Bool {
         let lower = email.trimmingCharacters(in: .whitespaces).lowercased()
         guard !lower.isEmpty else { return false }
         if let user = allUsers.first(where: { $0.email.lowercased() == lower }) {
             currentUser = user
+            saveCurrentUserId(user.id)
             return true
         }
         return false
@@ -32,6 +35,7 @@ final class UserManager: ObservableObject {
 
     func logout() {
         currentUser = nil
+        clearCurrentUserId()
     }
 
     func updateCurrentUserStatus(_ newStatus: UserStatus) {
@@ -61,6 +65,7 @@ final class UserManager: ObservableObject {
         saveUsers()
 
         currentUser = newUser
+        saveCurrentUserId(newUser.id)
 
         Task {
             await firebaseService.updateUserStatus(newUser)
@@ -143,6 +148,21 @@ final class UserManager: ObservableObject {
             await firebaseService.updateFriendRequestStatus(id: request.id, status: .declined)
             await refreshFriendRequestsAsync()
         }
+    }
+
+    /// Отменить исходящую заявку в друзья (только pending).
+    func cancelSentRequest(_ request: FriendRequest) {
+        guard request.fromUserId == currentUser?.id, request.status == .pending else { return }
+        sentFriendRequests.removeAll { $0.id == request.id }
+        Task { @MainActor in
+            await firebaseService.updateFriendRequestStatus(id: request.id, status: .cancelled)
+            await refreshFriendRequestsAsync()
+        }
+    }
+
+    /// Входящая заявка от пользователя с заданным id (если есть).
+    func incomingRequest(from userId: UUID) -> FriendRequest? {
+        incomingFriendRequests.first { $0.fromUserId == userId }
     }
 
     /// Обновить списки заявок из Firebase.
@@ -232,6 +252,8 @@ final class UserManager: ObservableObject {
 
         if let currentId = currentUser?.id {
             currentUser = users.first(where: { $0.id == currentId }) ?? currentUser
+        } else {
+            restoreCurrentUserIfNeeded()
         }
 
         saveUsers()
@@ -252,18 +274,26 @@ final class UserManager: ObservableObject {
         }
     }
 
+    private func saveCurrentUserId(_ id: UUID) {
+        UserDefaults.standard.set(id.uuidString, forKey: Self.currentUserIdKey)
+    }
+
+    private func clearCurrentUserId() {
+        UserDefaults.standard.removeObject(forKey: Self.currentUserIdKey)
+    }
+
+    /// Восстановить текущего пользователя из UserDefaults (после перезапуска приложения).
+    private func restoreCurrentUserIfNeeded() {
+        guard currentUser == nil,
+              let idStr = UserDefaults.standard.string(forKey: Self.currentUserIdKey),
+              let id = UUID(uuidString: idStr),
+              let user = allUsers.first(where: { $0.id == id }) else { return }
+        currentUser = user
+    }
+
     init() {
         loadUsers()
-        if allUsers.isEmpty {
-            let testUsers = [
-                User(name: "Анна", email: "anna@test.com", username: "anna"),
-                User(name: "Иван", email: "ivan@test.com", username: "ivan", status: .offline),
-                User(name: "Мария", email: "maria@test.com", username: "maria", status: .studying),
-                User(name: "Алексей", email: "alex@test.com", username: "alex", status: .working)
-            ]
-            allUsers = testUsers
-            saveUsers()
-        }
+        restoreCurrentUserIfNeeded()
         // Подтянуть реальные данные из Firebase в фоне.
         refreshFromFirebase()
     }

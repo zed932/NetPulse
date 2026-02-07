@@ -10,6 +10,17 @@ enum FriendRequestStatus: String, Codable {
     case pending = "pending"
     case accepted = "accepted"
     case declined = "declined"
+    /// Отменена отправителем.
+    case cancelled = "cancelled"
+
+    var displayTitle: String {
+        switch self {
+        case .pending: return "Ожидает"
+        case .accepted: return "Принято"
+        case .declined: return "Отклонено"
+        case .cancelled: return "Отменено"
+        }
+    }
 }
 
 /// Заявка в друзья (от кого, кому, статус).

@@ -30,11 +30,33 @@ struct FriendsScreen: View {
     }
 
     private var friendRequestsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Входящие заявки в друзья")
-                .font(.headline)
-            IncomingFriendRequestsView()
+        NavigationLink {
+            IncomingFriendRequestsScreen()
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text("Входящие заявки в друзья")
+                            .font(.headline)
+                        if !userManager.incomingFriendRequests.isEmpty {
+                            Text("\(userManager.incomingFriendRequests.count)")
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(AppTheme.primary))
+                        }
+                    }
+                    Text("Принять или отклонить заявки")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+            }
         }
+        .buttonStyle(.plain)
         .appCard()
     }
 
